@@ -1,0 +1,1 @@
+savedcmd_/home/mithilesh/Desktop/Device-Driver-Example/3_Sysfs_Access_Driver/Module.symvers :=  scripts/mod/modpost -M -m -a      -o /home/mithilesh/Desktop/Device-Driver-Example/3_Sysfs_Access_Driver/Module.symvers -T /home/mithilesh/Desktop/Device-Driver-Example/3_Sysfs_Access_Driver/modules.order -i Module.symvers -e 
