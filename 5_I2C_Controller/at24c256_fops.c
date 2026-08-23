@@ -24,7 +24,8 @@ static ssize_t my_i2c_read(struct file *file, char __user *buf, size_t len, loff
     if (len > BUFFER_SIZE)
         len = BUFFER_SIZE;
 
-    mutex_lock(&dev->lock);
+    if (mutex_lock_interruptible(&dev->lock))
+        return -ERESTARTSYS;
 
     ret = at24c256_hw_read(dev, dev->buf, len, *off);
     if (ret < 0) {
@@ -43,32 +44,58 @@ static ssize_t my_i2c_read(struct file *file, char __user *buf, size_t len, loff
     return ret;
 }
 
+static loff_t my_i2c_llseek(struct file *file, loff_t offset, int whence)
+{
+    return fixed_size_llseek(file, offset, whence, AT24C256_TOTAL_SIZE);
+}
+
 static ssize_t my_i2c_write(struct file *file, const char __user *buf, size_t len, loff_t *off)
 {
     struct my_i2c_dev *dev = file->private_data;
     ssize_t ret;
 
-    if (*off >= EEPROM_SIZE)
+    pr_info("my_i2c_write: Entered with len=%zu, off=%lld\n", len, *off);
+
+    if (*off >= EEPROM_SIZE) {
+        pr_err("my_i2c_write: Offset %lld exceeds EEPROM size %d (-ENOSPC)\n", *off, EEPROM_SIZE);
         return -ENOSPC;
+    }
 
-    if (len > (BUFFER_SIZE - 2))
+    if (len > (BUFFER_SIZE - 2)) {
+        pr_info("my_i2c_write: Capping requested len %zu to max allowed %d\n", len, BUFFER_SIZE - 2);
         len = BUFFER_SIZE - 2;
+    }
 
-    mutex_lock(&dev->lock);
+    pr_info("my_i2c_write: Attempting to acquire mutex lock...\n");
+    if (mutex_lock_interruptible(&dev->lock)) {
+        pr_err("my_i2c_write: Mutex lock interrupted by signal (-ERESTARTSYS)\n");
+        return -ERESTARTSYS;
+    }
+    pr_info("my_i2c_write: Mutex lock acquired\n");
 
     if (copy_from_user(dev->buf, buf, len)) {
+        pr_err("my_i2c_write: copy_from_user failed (-EFAULT)\n");
         mutex_unlock(&dev->lock);
+        pr_info("my_i2c_write: Mutex unlocked after copy_from_user failure\n");
         return -EFAULT;
     }
+    pr_info("my_i2c_write: Successfully copied %zu bytes from user space\n", len);
 
+    pr_info("my_i2c_write: Calling at24c256_hw_write (len=%zu, off=%lld)\n", len, *off);
     ret = at24c256_hw_write(dev, dev->buf, len, *off);
     if (ret < 0) {
+        pr_err("my_i2c_write: at24c256_hw_write failed with error %zd\n", ret);
         mutex_unlock(&dev->lock);
+        pr_info("my_i2c_write: Mutex unlocked after hardware write failure\n");
         return ret;
     }
+    pr_info("my_i2c_write: at24c256_hw_write succeeded, wrote %zd bytes\n", ret);
 
     *off += ret;
+    pr_info("my_i2c_write: Updated offset to %lld\n", *off);
+
     mutex_unlock(&dev->lock);
+    pr_info("my_i2c_write: Mutex unlocked. Returning %zd\n", ret);
 
     return ret;
 }
@@ -83,6 +110,6 @@ const struct file_operations my_i2c_fops = {
     .open    = my_i2c_open,
     .read    = my_i2c_read,
     .write   = my_i2c_write,
-    .llseek  = default_llseek,
+    .llseek  = my_i2c_llseek,
     .release = my_i2c_release,
 };

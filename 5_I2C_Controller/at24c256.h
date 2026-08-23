@@ -19,12 +19,17 @@
 #define BUFFER_SIZE 256
 #define EEPROM_SIZE 32768
 
+#define AT24C256_PAGE_SIZE      64
+#define AT24C256_TOTAL_SIZE     32768
+#define AT24C256_WRITE_TIME_MS  5
+
 struct my_i2c_dev {
     struct i2c_client *client;
     struct cdev cdev;
     dev_t dev_num;
     struct mutex lock;
     u8 buf[BUFFER_SIZE];
+    u8 write_buf[66]; /* 2 bytes (Address) + 64 bytes (Max Page Payload) */
 };
 
 extern struct class *my_i2c_class;
