@@ -1,1 +1,0 @@
-savedcmd_/home/mithilesh/Desktop/Device-Driver-Example/4_Sysfs_GPIO_Controller/Module.symvers :=  scripts/mod/modpost -M -m -a      -o /home/mithilesh/Desktop/Device-Driver-Example/4_Sysfs_GPIO_Controller/Module.symvers -T /home/mithilesh/Desktop/Device-Driver-Example/4_Sysfs_GPIO_Controller/modules.order -i Module.symvers -e 

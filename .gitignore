@@ -1,0 +1,29 @@
+# Output & Build directories
+out/
+
+# Kernel Module Build Artifacts
+*.o
+*.o.d
+*.ko
+*.mod
+*.mod.c
+*.mod.o
+*.symvers
+*.order
+*.cmd
+.*.cmd
+.tmp_versions/
+
+# Module signing keys & internal state
+*.ko.cmd
+*.o.cmd
+
+# Ctags / Editor files
+.vscode/
+.idea/
+*.swp
+*~
+tags
+GTAGS
+GRTAGS
+GPATH
