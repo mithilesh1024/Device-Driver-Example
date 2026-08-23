@@ -1,1 +1,0 @@
-savedcmd_/home/mithilesh/Desktop/Device-Driver-Example/3_Sysfs_Access_Driver/hello_driver.mod := printf '%s\n'   hello_driver.o | awk '!x[$$0]++ { print("/home/mithilesh/Desktop/Device-Driver-Example/3_Sysfs_Access_Driver/"$$0) }' > /home/mithilesh/Desktop/Device-Driver-Example/3_Sysfs_Access_Driver/hello_driver.mod

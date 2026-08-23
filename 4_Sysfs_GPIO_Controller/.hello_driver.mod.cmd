@@ -1,1 +1,0 @@
-savedcmd_/home/mithilesh/Desktop/Device-Driver-Example/4_Sysfs_GPIO_Controller/hello_driver.mod := printf '%s\n'   hello_driver.o | awk '!x[$$0]++ { print("/home/mithilesh/Desktop/Device-Driver-Example/4_Sysfs_GPIO_Controller/"$$0) }' > /home/mithilesh/Desktop/Device-Driver-Example/4_Sysfs_GPIO_Controller/hello_driver.mod
