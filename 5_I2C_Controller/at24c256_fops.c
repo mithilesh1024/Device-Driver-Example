@@ -10,7 +10,7 @@ static int my_i2c_open(struct inode *inode, struct file *file)
     return 0;
 }
 
-static ssize_t my_i2c_read(struct file *file, char __user *buf, size_t len, loff_t *off)
+static ssize_t my_i2c_read(struct file *file, char __user *buf, size_t len, loff_t* off)
 {
     struct my_i2c_dev *dev = file->private_data;
     ssize_t ret;
@@ -49,7 +49,7 @@ static loff_t my_i2c_llseek(struct file *file, loff_t offset, int whence)
     return fixed_size_llseek(file, offset, whence, AT24C256_TOTAL_SIZE);
 }
 
-static ssize_t my_i2c_write(struct file *file, const char __user *buf, size_t len, loff_t *off)
+static ssize_t my_i2c_write(struct file *file, const char __user *buf, size_t len, loff_t* off)
 {
     struct my_i2c_dev *dev = file->private_data;
     ssize_t ret;
