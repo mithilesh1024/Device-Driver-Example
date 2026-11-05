@@ -14,11 +14,28 @@ static int at24c256_ack_poll(struct i2c_client *client)
 
     while (time_before(jiffies, timeout)) {
         /* If i2c_transfer returns 1, the chip acknowledged its address! */
-        if(i2c_transfer(client->adapter, &msg, 1) == 1) {
+        int ret = i2c_transfer(client->adapter, &msg, 1);
+
+        if (ret == 1)
             return 0;
+
+        if (ret >= 0) {
+            dev_err(&client->dev,
+                    "Incomplete ACK poll transfer: %d\n", ret);
+            return -EIO;
         }
+
+        if (ret != -EREMOTEIO && ret != -ENXIO) {
+            dev_err(&client->dev,
+                    "ACK polling failed: %d\n", ret);
+            return ret;
+        }
+
         usleep_range(100, 200);
     }
+
+    dev_err(&client->dev,
+            "EEPROM ACK polling timed out\n");
 
     return -ETIMEDOUT;
 }
@@ -140,7 +157,14 @@ ssize_t at24c256_hw_write(struct my_i2c_dev *dev, const u8 *buf, size_t len, lof
         pr_info("at24c256_hw_write: i2c_master_send succeeded (sent %d bytes)\n", ret);
 
         pr_info("at24c256_hw_write: Waiting t_WR delay (%d ms)...\n", AT24C256_WRITE_TIME_MS);
-        at24c256_ack_poll(dev->client);
+        ret = at24c256_ack_poll(dev->client);
+
+        if (ret < 0) {
+            dev_err(&dev->client->dev,
+                    "EEPROM not ready after page write at 0x%04llx: %d\n",
+                    cur_off, ret);
+            goto out_unlock;
+        }
 
         bytes_left -= chunk_len;
         written_total += chunk_len;

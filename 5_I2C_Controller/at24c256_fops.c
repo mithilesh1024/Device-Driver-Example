@@ -105,6 +105,36 @@ static int my_i2c_release(struct inode *inode, struct file *file)
     return 0;
 }
 
+static int my_i2c_fsync(struct file *file, loff_t start, loff_t end, int datasync)
+{
+    struct my_i2c_dev *dev = file->private_data;
+    int ret;
+
+    if (!dev || !dev->client)
+        return -ENODEV;
+
+    /*
+     * Serialize fsync with ongoing read/write operations.
+     */
+    if (mutex_lock_interruptible(&dev->lock))
+        return -ERESTARTSYS;
+
+    /*
+     * Check whether EEPROM is ready.
+     */
+    ret = at24c256_ack_poll(dev->client);
+
+    if (ret < 0) {
+        dev_err(&dev->client->dev, "fsync: EEPROM synchronization failed: %d\n", ret);
+    } else {
+        dev_dbg(&dev->client->dev, "fsync: EEPROM is ready\n");
+    }
+
+    mutex_unlock(&dev->lock);
+
+    return ret;
+}
+
 const struct file_operations my_i2c_fops = {
     .owner   = THIS_MODULE,
     .open    = my_i2c_open,
@@ -112,4 +142,5 @@ const struct file_operations my_i2c_fops = {
     .write   = my_i2c_write,
     .llseek  = my_i2c_llseek,
     .release = my_i2c_release,
+    .fsync = my_i2c_fsync,
 };
