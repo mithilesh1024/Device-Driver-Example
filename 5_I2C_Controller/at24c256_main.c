@@ -3,7 +3,7 @@
 #include "at24c256.h"
 
 struct class *my_i2c_class;
-static struct i2c_client *at24c256_client;
+// static struct i2c_client *at24c256_client;
 
 static int my_i2c_probe(struct i2c_client *client)
 {
@@ -62,6 +62,15 @@ static void my_i2c_remove(struct i2c_client *client)
     dev_info(&client->dev, "I2C device removed\n");
 }
 
+static const struct of_device_id my_i2c_of_match[] = {
+    {
+        .compatible = "myproject,my-eeprom",
+    },
+    {}
+};
+
+MODULE_DEVICE_TABLE(of, my_i2c_of_match);
+
 static const struct i2c_device_id my_i2c_id[] = {
     { "my_i2c_dev", 0 },
     { }
@@ -71,6 +80,7 @@ MODULE_DEVICE_TABLE(i2c, my_i2c_id);
 static struct i2c_driver my_i2c_driver = {
     .driver = {
         .name = DRIVER_NAME,
+        .of_match_table = my_i2c_of_match,
     },
     .probe    = my_i2c_probe,
     .remove   = my_i2c_remove,
@@ -94,30 +104,31 @@ static int __init my_driver_init(void)
         return ret;
     }
 
-    /* 2. Get handle for I2C Bus 1 (RPi default) */
-    adapter = i2c_get_adapter(1);
-    if (!adapter) {
-        pr_err("Failed to get I2C adapter 1\n");
-        i2c_del_driver(&my_i2c_driver);
-        class_destroy(my_i2c_class);
-        return -ENODEV;
-    }
+    // Below Commented part is not needed if using device tree
+    // /* 2. Get handle for I2C Bus 1 (RPi default) */
+    // adapter = i2c_get_adapter(1);
+    // if (!adapter) {
+    //     pr_err("Failed to get I2C adapter 1\n");
+    //     i2c_del_driver(&my_i2c_driver);
+    //     class_destroy(my_i2c_class);
+    //     return -ENODEV;
+    // }
 
-    /* 3. Define board info for 0x50 inside driver initialization */
-    memset(&board_info, 0, sizeof(struct i2c_board_info));
-    strscpy(board_info.type, "my_i2c_dev", I2C_NAME_SIZE);
-    board_info.addr = 0x50;
+    // /* 3. Define board info for 0x50 inside driver initialization */
+    // memset(&board_info, 0, sizeof(struct i2c_board_info));
+    // strscpy(board_info.type, "my_i2c_dev", I2C_NAME_SIZE);
+    // board_info.addr = 0x50;
 
-    /* 4. Instantiate device on Bus 1 -> Triggers probe() automatically */
-    at24c256_client = i2c_new_client_device(adapter, &board_info);
-    i2c_put_adapter(adapter); /* Release adapter reference counter */
+    // /* 4. Instantiate device on Bus 1 -> Triggers probe() automatically */
+    // at24c256_client = i2c_new_client_device(adapter, &board_info);
+    // i2c_put_adapter(adapter); /* Release adapter reference counter */
 
-    if (IS_ERR(at24c256_client)) {
-        pr_err("Failed to instantiate I2C client at 0x50\n");
-        i2c_del_driver(&my_i2c_driver);
-        class_destroy(my_i2c_class);
-        return PTR_ERR(at24c256_client);
-    }
+    // if (IS_ERR(at24c256_client)) {
+    //     pr_err("Failed to instantiate I2C client at 0x50\n");
+    //     i2c_del_driver(&my_i2c_driver);
+    //     class_destroy(my_i2c_class);
+    //     return PTR_ERR(at24c256_client);
+    // }
 
     return 0;
 }
@@ -125,8 +136,8 @@ static int __init my_driver_init(void)
 static void __exit my_driver_exit(void)
 {
     /* Unregister the client instance (triggers remove()) */
-    if (at24c256_client)
-        i2c_unregister_device(at24c256_client);
+    // if (at24c256_client)
+    //     i2c_unregister_device(at24c256_client);
 
     i2c_del_driver(&my_i2c_driver);
     class_destroy(my_i2c_class);

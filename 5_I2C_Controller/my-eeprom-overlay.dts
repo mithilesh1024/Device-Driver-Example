@@ -1,0 +1,18 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "brcm,bcm2711";
+
+    fragment@0 {
+        target = <&i2c_arm>;
+
+        __overlay__ {
+
+            eeprom@50 {
+                compatible = "myproject,my-eeprom";
+                reg = <0x50>;
+            };
+        };
+    };
+};

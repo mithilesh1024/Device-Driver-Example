@@ -13,6 +13,7 @@
 #include <linux/mutex.h>
 #include <linux/delay.h>
 #include <linux/mod_devicetable.h>
+#include <linux/of.h>
 
 #define DRIVER_NAME "my_i2c_driver"
 #define CLASS_NAME  "my_i2c_class"
