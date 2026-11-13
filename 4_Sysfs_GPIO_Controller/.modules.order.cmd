@@ -1,1 +1,0 @@
-savedcmd_/home/mithilesh/Desktop/Device-Driver-Example/4_Sysfs_GPIO_Controller/modules.order := {   echo /home/mithilesh/Desktop/Device-Driver-Example/4_Sysfs_GPIO_Controller/hello_driver.o; :; } > /home/mithilesh/Desktop/Device-Driver-Example/4_Sysfs_GPIO_Controller/modules.order
